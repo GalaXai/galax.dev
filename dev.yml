@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "galax.dev"
+  site-url: "https://www.galax.dev"
+  description: "Personal Page"
+  repo-branch: main
+  repo-url: "https://github.com/GalaxUniv/galax.dev"

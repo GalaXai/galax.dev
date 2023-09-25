@@ -1,0 +1,38 @@
+---
+title: "apps playground"
+comments: false
+margin-header: |
+  ![Logo Header](static/images/profile.jpg)
+listing:
+  - id: apps
+    contents: apps
+    sort:
+      - "date desc"
+    categories: true
+    sort-ui: [date]
+    #filter-ui: [title, date, auther]
+    type: grid
+    grid-columns: 3
+    grid-item-border: true
+    grid-item-align: left
+    image-height: 100%
+    date-format: "dddd, DD MMMM YYYY"
+format:
+  html:
+    page-layout: full
+about:
+  template: solana
+  links:
+    - icon: discord
+      text: afterhoursbilly
+      href: https://www.discord.com/users/1063240042291671050
+    - icon: github
+      text: GitHub
+      href: https://github.com/GalaxUniv
+    - icon: twitter
+      text: Twitter
+      href: https://twitter.com/afterhoursbilly
+    - icon: envelope
+      text: hawrylukszymon@galax.dev
+      href: mailto:hawrylukszymon@galax.dev
+---

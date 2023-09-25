@@ -1,0 +1,20 @@
+---
+title: "blog"
+listing:
+  contents: posts
+  sort: "date desc"
+  type: default
+  categories: true
+  sort-ui: [date]
+  #filter-ui: [title, date, auther]
+  feed: true
+  page-size: 6
+  image-align: left
+  date-format: "DD MMMM YYYY"
+  fields: [title, subtitle, author, description, date, image ,reading-time]
+format: 
+    html:
+        page-layout: full
+website:
+    back-to-top-navigation: true
+---

@@ -1,8 +1,27 @@
 ---
-pagetitle: Page
+title: "Hello 👋"
+format:
+  html:
+    page-layout: full
+pagetitle: galax.dev
 section-divs: false
-css: styles.css
 toc: false
+sidebar: false
+
+listing:
+  - id: posts
+    contents: posts
+    type: default
+    max-items: 3
+    sort:
+      - "date desc"
+  - id: apps
+    contents: apps
+    type: grid
+    max-items: 3
+    grid-columns: 3
+    sort:
+      - "data desc"
 image: static/images/profile.jpg
 about:
   template: jolla
@@ -19,15 +38,33 @@ about:
       text: Twitter
       href: https://twitter.com/afterhoursbilly
     - icon: envelope
-      text: hawrylukszymon@galax.dev
-      href: mailto:hawrylukszymon@galax.dev
-sidebar: false
+      text: contact@galax.dev
+      href: mailto:contact@galax.dev
+back-to-top-navigation: false
 ---
-<h1>Hello Welcome to my Page 👋 </h1>
 
 This is a Quarto website.
 
+
 To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
-<hr>
+
+:::::{.grid}
+::::{.g-col-12 .g-col-md-6}
+## forblog
+Click [here](http://example.org/) to check out the latest Blogs.
+
+:::{#posts}
+:::
+::::
+::::{.g-col-12 .g-col-md-6}
+## playground
+Click [here](http://example.org/) to play more in the playground.
+
+:::{#apps}
+:::
+
+
+::::
+:::::
+
 <h2> Contact Information </h2>
-<hr>

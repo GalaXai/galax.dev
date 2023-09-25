@@ -4,46 +4,57 @@ project:
     port: 3000
     browser: false
 
+
+format:
+  html:
+    theme:
+        dark: darkly
+        light: flatly
+    css: static/css/styles.css
+    toc: true
+    toc-depth: 4
+
 website:
   twitter-card: true
   open-graph: false
   repo-actions: [issue]
   title: "galax"
+  site-url: https://galax.dev
+  description: "hi"
+  back-to-top-navigation: true
+  page-footer: 
+    left:
+      - text: "@galax.dev"
+  
   navbar:
     background: primary
     search: true
-    collapse-below: lg
+    collapse-below: xxl
+    #pinned: true
     left:
       - href: index.qmd
         text: home
-      - href: about.qmd
-        text: about
+      - href: blog.qmd
+        text: blog
+      - text: "sandbox"
+        href: apps.qmd
       - text: "contact"
         menu:
         - icon: envelope
-          text: hawrylukszymon@galax.dev
-          href: mailto:hawrylukszymon@galax.dev
+          text: contact@galax.dev
+          href: mailto:contact@galax.dev
         - icon: discord
           text: afterhoursbilly
           href: https://www.discord.com/users/1063240042291671050
+        - icon: twitter
+          text: twitter
+          href: https://www.X.com/afterhoursbilly
     right:
       - icon: github
         href: "https://github.com/GalaxUniv"
       - icon: twitter
         href: https://twitter.com/afterhoursbilly
 
-      
 
-
-format:
-  html:
-    theme:
-        light: flatly
-        dark: darkly
-    css: styles.css
-    toc: true
-    toc-depth: 4
-
-
-
+metadata-files: [dev.yml]
 
