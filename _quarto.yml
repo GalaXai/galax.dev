@@ -1,0 +1,49 @@
+project:
+  type: website
+  preview:
+    port: 3000
+    browser: false
+
+website:
+  twitter-card: true
+  open-graph: false
+  repo-actions: [issue]
+  title: "galax"
+  navbar:
+    background: primary
+    search: true
+    collapse-below: lg
+    left:
+      - href: index.qmd
+        text: home
+      - href: about.qmd
+        text: about
+      - text: "contact"
+        menu:
+        - icon: envelope
+          text: hawrylukszymon@galax.dev
+          href: mailto:hawrylukszymon@galax.dev
+        - icon: discord
+          text: afterhoursbilly
+          href: https://www.discord.com/users/1063240042291671050
+    right:
+      - icon: github
+        href: "https://github.com/GalaxUniv"
+      - icon: twitter
+        href: https://twitter.com/afterhoursbilly
+
+      
+
+
+format:
+  html:
+    theme:
+        light: flatly
+        dark: darkly
+    css: styles.css
+    toc: true
+    toc-depth: 4
+
+
+
+

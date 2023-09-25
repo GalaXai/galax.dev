@@ -1,0 +1,33 @@
+---
+pagetitle: Page
+section-divs: false
+css: styles.css
+toc: false
+image: static/images/profile.jpg
+about:
+  template: jolla
+  image-width: 20em
+  image-shape: round
+  links:
+    - icon: discord
+      text: afterhoursbilly
+      href: https://www.discord.com/users/1063240042291671050
+    - icon: github
+      text: GitHub
+      href: https://github.com/GalaxUniv
+    - icon: twitter
+      text: Twitter
+      href: https://twitter.com/afterhoursbilly
+    - icon: envelope
+      text: hawrylukszymon@galax.dev
+      href: mailto:hawrylukszymon@galax.dev
+sidebar: false
+---
+<h1>Hello Welcome to my Page 👋 </h1>
+
+This is a Quarto website.
+
+To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+<hr>
+<h2> Contact Information </h2>
+<hr>
