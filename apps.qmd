@@ -33,6 +33,6 @@ about:
       text: Twitter
       href: https://twitter.com/afterhoursbilly
     - icon: envelope
-      text: hawrylukszymon@galax.dev
-      href: mailto:hawrylukszymon@galax.dev
+      text: contact@galax.dev
+      href: mailto:contact@galax.dev
 ---
