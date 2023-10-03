@@ -8,9 +8,9 @@ project:
 
 format:
   html:
-    theme:
-        dark: darkly
-        light: flatly
+    theme:      
+      dark: darkly
+      light: flatly
     css: static/css/styles.css
     toc: true
     toc-depth: 4

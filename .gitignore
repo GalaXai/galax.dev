@@ -2,3 +2,4 @@ _site/
 _docs/
 .quarto/
 /.quarto/
+.ipynb_checkpoints/

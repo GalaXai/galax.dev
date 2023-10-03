@@ -1,6 +1,19 @@
 toc: true
 reference-location: margin
-date-format: "dddd, DD MMMM YYYY"
+date-format: "dddd, D/MMMM/YYYY"
 reading-time: true
+code-block-bg: true
+code-block-border-left: "#2B2A33"
+#| code-overflow: wrap
 website:
   reader-mode: true
+  #dark-mode: true
+
+execute: 
+  enabled: false
+
+format:
+  html:
+    code-line-numbers: true
+    page-layout: full
+    highlight-style: atom-one-dark

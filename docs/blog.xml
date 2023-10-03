@@ -10,6 +10,714 @@
 <atom:link href="https://www.galax.dev/blog.xml" rel="self" type="application/rss+xml"/>
 <description>Personal Page</description>
 <generator>quarto-1.3.450</generator>
-<lastBuildDate>Tue, 26 Sep 2023 10:40:17 GMT</lastBuildDate>
+<lastBuildDate>Mon, 02 Oct 2023 22:00:00 GMT</lastBuildDate>
+<item>
+  <title>An Image-to-Image Implementation</title>
+  <link>https://www.galax.dev/posts/00_Image-to-Image.html</link>
+  <description><![CDATA[ 
+
+
+
+<section id="text-guided-image-to-image-implementation" class="level1">
+<h1>Text-Guided: Image-to-Image Implementation</h1>
+<p>This Python code demonstrates the implementation of the Image-to-Image technique, allowing you to generate new images from existing ones with the help of textual prompts.</p>
+<p>Explore how this innovative approach combines images and text to create visually compelling artworks. Dive into the code to understand the mechanics behind this cutting-edge image generation technique.</p>
+<div class="cell">
+<details>
+<summary>Pip install necessary libraries (click to show/hide)</summary>
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!</span>pip install <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>Uq diffusers transformers fastcore fastdownload</span></code></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="2">
+<details>
+<summary>Importing utilities (click to show/hide)</summary>
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> transformers <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> CLIPTextModel, CLIPTokenizer</span>
+<span id="cb2-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torch</span>
+<span id="cb2-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> diffusers <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> LMSDiscreteScheduler</span>
+<span id="cb2-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> PIL <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Image</span>
+<span id="cb2-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> tqdm.auto <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> tqdm</span>
+<span id="cb2-6"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> diffusers <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> AutoencoderKL, UNet2DConditionModel</span>
+<span id="cb2-7"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> logging</span>
+<span id="cb2-8"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> fastdownload <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> FastDownload</span>
+<span id="cb2-9"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> pathlib <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Path</span>
+<span id="cb2-10"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> huggingface_hub <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> notebook_login</span>
+<span id="cb2-11"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> matplotlib.pyplot <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> plt</span>
+<span id="cb2-12"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> torchvision <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> transforms</span>
+<span id="cb2-13"></span>
+<span id="cb2-14"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">not</span> (Path.home()<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'.cache/huggingface'</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'token'</span>).exists(): notebook_login()</span>
+<span id="cb2-15">logging.disable(logging.WARNING)</span></code></pre></div>
+</details>
+</div>
+<p>We need to load in the required libraries and set up the models.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1">tokenizer <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> CLIPTokenizer.from_pretrained(</span>
+<span id="cb3-2">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"openai/clip-vit-large-patch14"</span>, torch_dtype<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>torch.float16)</span>
+<span id="cb3-3"></span>
+<span id="cb3-4">text_encoder <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> CLIPTextModel.from_pretrained(</span>
+<span id="cb3-5">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"openai/clip-vit-large-patch14"</span>, torch_dtype<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>torch.float16).to(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cuda"</span>)</span>
+<span id="cb3-6"></span>
+<span id="cb3-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Here we use a different VAE to the original release, which has been fine-tuned for more steps</span></span>
+<span id="cb3-8">vae <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> AutoencoderKL.from_pretrained(</span>
+<span id="cb3-9">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"stabilityai/sd-vae-ft-ema"</span>, torch_dtype<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>torch.float16).to(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cuda"</span>)</span>
+<span id="cb3-10"></span>
+<span id="cb3-11">unet <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> UNet2DConditionModel.from_pretrained(</span>
+<span id="cb3-12">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"CompVis/stable-diffusion-v1-4"</span>, subfolder<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"unet"</span>, torch_dtype<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>torch.float16).to(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cuda"</span>)</span></code></pre></div>
+</div>
+<p>Define the parameters.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1">height <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">512</span></span>
+<span id="cb4-2">width <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">512</span></span>
+<span id="cb4-3">num_inference_steps <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>  <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">70</span></span>
+<span id="cb4-4">guidance_scale <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">7.5</span></span>
+<span id="cb4-5">batch_size <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb4-6">beta_start,beta_end <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.00085</span>,<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.012</span></span></code></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1">scheduler <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> LMSDiscreteScheduler(beta_start<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>beta_start, beta_end<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>beta_end, beta_schedule<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"scaled_linear"</span>, num_train_timesteps<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>)</span></code></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1">plt.plot(scheduler.sigmas)</span>
+<span id="cb6-2">plt.title(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Noise Schedule'</span>)</span>
+<span id="cb6-3">plt.xlabel(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Sampling step'</span>)</span>
+<span id="cb6-4">plt.ylabel(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'sigma'</span>)</span>
+<span id="cb6-5">plt.show()</span></code></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="https://www.galax.dev/posts/00_Image-to-Image_files/figure-html/cell-7-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> prep_img(img_link : <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-&gt;</span> torch.Tensor:</span>
+<span id="cb7-2">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb7-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Preprocesses an image from a given link.</span></span>
+<span id="cb7-4"></span>
+<span id="cb7-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Args:</span></span>
+<span id="cb7-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        img_link (str): The URL or path to the image file.</span></span>
+<span id="cb7-7"></span>
+<span id="cb7-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Returns:</span></span>
+<span id="cb7-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        torch.Tensor: A tensor representing the preprocessed image.</span></span>
+<span id="cb7-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    """</span></span>
+<span id="cb7-11">    </span>
+<span id="cb7-12">    p <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> FastDownload().download(img_link)</span>
+<span id="cb7-13">    init_image <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Image.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">open</span>(p).convert(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"RGB"</span>).resize((<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">512</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">512</span>))</span>
+<span id="cb7-14">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> transforms.ToTensor()(init_image)</span></code></pre></div>
+</div>
+<p>The image we will use as a starting point.</p>
+<div class="cell" data-execution_count="10">
+<details>
+<summary>Downloading the image (click to show/hide)</summary>
+<div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1">link <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://cdn-uploads.huggingface.co/production/uploads/1664665907257-noauth.png"</span></span>
+<span id="cb8-2">transformed_image <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> prep_img(link)</span>
+<span id="cb8-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># show image in notebook.</span></span>
+<span id="cb8-4">p <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> FastDownload().download(link)</span>
+<span id="cb8-5">display(Image.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">open</span>(p).convert(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"RGB"</span>).resize((<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">512</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">512</span>)))</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="https://www.galax.dev/posts/00_Image-to-Image_files/figure-html/cell-9-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> tokenization(prompt: <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">list</span>, max_len : <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">int</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span>) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> torch.Tensor:</span>
+<span id="cb9-2">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb9-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Tokenizes a text prompt and returns the corresponding encoded tensor.</span></span>
+<span id="cb9-4"></span>
+<span id="cb9-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Args:</span></span>
+<span id="cb9-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        prompt (list): The input text prompt to be tokenized.</span></span>
+<span id="cb9-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        max_len (int, optional): The maximum length of the tokenized sequence. If not specified,</span></span>
+<span id="cb9-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">            it defaults to the maximum length allowed by the tokenizer.</span></span>
+<span id="cb9-9"></span>
+<span id="cb9-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Returns:</span></span>
+<span id="cb9-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        torch.Tensor: A tensor containing the encoded representation of the tokenized prompt.</span></span>
+<span id="cb9-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    """</span></span>
+<span id="cb9-13"></span>
+<span id="cb9-14">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> max_len <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">is</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span> : max_len <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> tokenizer.model_max_length</span>
+<span id="cb9-15">    </span>
+<span id="cb9-16">    tokenized_prompt <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> tokenizer(prompt, padding<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"max_length"</span>, max_length <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> max_len, truncation<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>, return_tensors<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'pt'</span>)</span>
+<span id="cb9-17">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> text_encoder(tokenized_prompt.input_ids.to(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'cuda'</span>))[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>].half()</span>
+<span id="cb9-18"></span>
+<span id="cb9-19"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> make_image(latent: torch.Tensor):</span>
+<span id="cb9-20">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb9-21"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Converts a tensor representation of an image into a PIL Image.</span></span>
+<span id="cb9-22"></span>
+<span id="cb9-23"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Args:</span></span>
+<span id="cb9-24"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        latent (torch.Tensor): A tensor representing an image.</span></span>
+<span id="cb9-25"></span>
+<span id="cb9-26"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Returns:</span></span>
+<span id="cb9-27"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        PIL.Image.Image: A PIL Image representing the image.</span></span>
+<span id="cb9-28"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    """</span></span>
+<span id="cb9-29">    image <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (latent<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.5</span>).clamp(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>).detach().cpu().permute(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>).numpy()</span>
+<span id="cb9-30">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> Image.fromarray((image<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">255</span>).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">round</span>().astype(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"uint8"</span>))</span></code></pre></div>
+</div>
+<section id="denoising-loop" class="level2">
+<h2 class="anchored" data-anchor-id="denoising-loop">Denoising loop</h2>
+<p>To ensure the effectiveness of this solution, it is essential to incorporate the “start_step” parameter.</p>
+<p>Essentially, we aim to prevent excessive noise from being added to the input image, particularly avoiding the most intense noise additions.</p>
+<p>After this initial step, we can proceed with the looping process.</p>
+<blockquote class="blockquote">
+<p>In summary, the key to success here is to introduce the “start_step” parameter, which helps us avoid excessive noise in the early stages and then continue with the loop as intended.</p>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode numberSource python code-overflow-scroll number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> create_sample(prompt: <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">list</span>,transformed_image: torch.Tensor ,guidance_scale: <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">float</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">7.5</span>, seed: <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">int</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>, steps: <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">int</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">70</span>,start_step: <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">int</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>):</span>
+<span id="cb10-2">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">'''</span></span>
+<span id="cb10-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Generate a sample image based on a text prompt, provided image and guidance parameters.</span></span>
+<span id="cb10-4"></span>
+<span id="cb10-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Args:</span></span>
+<span id="cb10-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        prompt (list): A list of text prompts.</span></span>
+<span id="cb10-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        transformed_image (torch.Tensor): A tensor representing the transformed image.</span></span>
+<span id="cb10-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        guidance_scale (float, optional): The scale factor for guiding the generation process.</span></span>
+<span id="cb10-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        seed (int, optional): Seed for random number generation. Default is 5.</span></span>
+<span id="cb10-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        steps (int, optional): The total number of steps for the generation process. Default is 70.</span></span>
+<span id="cb10-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        start_step (int, optional): The step at which the generation process starts. Default is 10.</span></span>
+<span id="cb10-12"></span>
+<span id="cb10-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Returns:</span></span>
+<span id="cb10-14"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">        torch.Tensor: A tensor representing the generated sample.</span></span>
+<span id="cb10-15"></span>
+<span id="cb10-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    This function generates an image based on the provided text prompts , transformed image and parametrs.It uses a predefined</span></span>
+<span id="cb10-17"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    VAE model to encode the image and then applies noise and guidance to generate the sample.It iteratively</span></span>
+<span id="cb10-18"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    refines the image by adding noise and updating the latent representation. The guidance scale controls the</span></span>
+<span id="cb10-19"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    influence of the text prompts on the image. The generated image is returned as a PyTorch tensor.</span></span>
+<span id="cb10-20"></span>
+<span id="cb10-21"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    Example:</span></span>
+<span id="cb10-22"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    &gt;&gt;&gt; prompt = ["Translate the following English sentence to French: 'Hello, how are you?'"]</span></span>
+<span id="cb10-23"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    &gt;&gt;&gt; transformed_image = prep_img(image_link)</span></span>
+<span id="cb10-24"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    &gt;&gt;&gt; generated_sample = create_sample(prompt, transformed_image)</span></span>
+<span id="cb10-25"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">    '''</span></span>
+<span id="cb10-26">    </span>
+<span id="cb10-27">    bs <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Implementation for only a single prompt.</span></span>
+<span id="cb10-28">    text <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> tokenization(prompt)</span>
+<span id="cb10-29">    uncond <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> tokenization([<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">""</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> bs, text.shape[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>])</span>
+<span id="cb10-30">    emb <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.cat([uncond, text])</span>
+<span id="cb10-31">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> seed:</span>
+<span id="cb10-32">        torch.manual_seed(seed)</span>
+<span id="cb10-33"></span>
+<span id="cb10-34">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Encode image</span></span>
+<span id="cb10-35">    image_latent <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> vae.encode((transformed_image.unsqueeze(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>).half().to(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'cuda'</span>))).latent_dist.sample()</span>
+<span id="cb10-36">    image_latent <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> vae.config.scaling_factor <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> image_latent</span>
+<span id="cb10-37"></span>
+<span id="cb10-38">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Create noise</span></span>
+<span id="cb10-39">    scheduler.set_timesteps(steps)</span>
+<span id="cb10-40">    noise_latents <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.randn_like(image_latent)</span>
+<span id="cb10-41"></span>
+<span id="cb10-42">    latents <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> scheduler.add_noise(image_latent, noise_latents,</span>
+<span id="cb10-43">                                  timesteps<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>torch.tensor([scheduler.timesteps[start_step]]))</span>
+<span id="cb10-44"></span>
+<span id="cb10-45">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> i, ts <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">enumerate</span>(tqdm(scheduler.timesteps)):</span>
+<span id="cb10-46">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> i <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;=</span> start_step:  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Skip the batches of noise that don't affect the input image.</span></span>
+<span id="cb10-47">            inp <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> scheduler.scale_model_input(torch.cat([latents] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>), ts)</span>
+<span id="cb10-48">            <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">with</span> torch.no_grad():</span>
+<span id="cb10-49">                noise_pred_uncond, noise_pred_text <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> unet(inp, ts, encoder_hidden_states<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>emb).sample.chunk(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)</span>
+<span id="cb10-50">            pred <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> noise_pred_uncond <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> guidance_scale <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> (noise_pred_text <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> noise_pred_uncond)</span>
+<span id="cb10-51">            latents <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> scheduler.step(pred, ts, latents).prev_sample</span>
+<span id="cb10-52"></span>
+<span id="cb10-53">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">with</span> torch.no_grad():</span>
+<span id="cb10-54">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> vae.decode(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.18215</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> latents).sample</span></code></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1">prompt <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>  [<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Wolf howling at the moon, photorealistic 4K'</span>]</span>
+<span id="cb11-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#prompt = ['unicorn']</span></span>
+<span id="cb11-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#prompt = ['a kids drawing of bacteria, cartoon style']</span></span>
+<span id="cb11-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#prompt = [' Horse looking at the morning sun, photorealistic 4K']</span></span></code></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1">image <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> create_sample(prompt,transformed_image,steps <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">50</span>,seed <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>)</span></code></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1">display(make_image(image[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>]))</span></code></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="https://www.galax.dev/posts/00_Image-to-Image_files/figure-html/cell-14-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+
+
+</section>
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a> ]]></description>
+  <category>Deep Learning</category>
+  <category>Stable Diffusion</category>
+  <category>Implementation</category>
+  <guid>https://www.galax.dev/posts/00_Image-to-Image.html</guid>
+  <pubDate>Mon, 02 Oct 2023 22:00:00 GMT</pubDate>
+  <media:content url="https://www.galax.dev/posts/images/img2img.png" medium="image" type="image/png" height="144" width="144"/>
+</item>
 </channel>
 </rss>

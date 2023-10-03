@@ -72,9 +72,9 @@ ul.task-list li input[type="checkbox"] {
     }
 
     const options = {
-      valueNames: [{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
       
-      searchColumns: [],
+      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -225,6 +225,30 @@ ul.task-list li input[type="checkbox"] {
 <p>Click <a href="http://example.org/">here</a> to check out the latest Blogs.</p>
 <div id="listing-posts" class="quarto-listing quarto-listing-container-default">
 <div class="list quarto-listing-default">
+<div class="quarto-post image-right" data-index="0" data-categories="Deep Learning,Stable Diffusion,Implementation" data-listing-date-sort="1696284000000" data-listing-file-modified-sort="1696330575760" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1">
+<div class="thumbnail">
+<p><a href="./posts/00_Image-to-Image.html"> <img src="./posts/images/img2img.png" class="thumbnail-image"> </a></p>
+</div>
+<div class="body">
+<a href="./posts/00_Image-to-Image.html">
+<h3 class="no-anchor listing-title">
+An Image-to-Image Implementation
+</h3>
+<div class="listing-subtitle">
+</div>
+<div class="listing-description">
+<p>Demonstation of an image-to-image implementation of the Stable Diffusion model.</p>
+</div>
+</a>
+</div>
+<div class="metadata">
+<a href="./posts/00_Image-to-Image.html">
+<div class="listing-date">
+Oct 3, 2023
+</div>
+</a>
+</div>
+</div>
 </div>
 <div class="listing-no-matching d-none">
 No matching items

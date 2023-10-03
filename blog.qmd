@@ -10,11 +10,27 @@ listing:
   feed: true
   page-size: 6
   image-align: left
-  date-format: "DD MMMM YYYY"
+  date-format: "dddd, DD MMMM YYYY"
   fields: [title, subtitle, author, description, date, image ,reading-time]
 format: 
     html:
         page-layout: full
 website:
     back-to-top-navigation: true
+
+about:
+  template: solana
+  links:
+    - icon: discord
+      text: afterhoursbilly
+      href: https://www.discord.com/users/1063240042291671050
+    - icon: github
+      text: GitHub
+      href: https://github.com/GalaxUniv
+    - icon: twitter
+      text: Twitter
+      href: https://twitter.com/afterhoursbilly
+    - icon: envelope
+      text: contact@galax.dev
+      href: mailto:contact@galax.dev
 ---
