@@ -35,30 +35,29 @@ about:
       text: GitHub
       href: https://github.com/GalaxUniv
     - icon: twitter
-      text: Twitter
+      text: Twitter 
       href: https://twitter.com/afterhoursbilly
     - icon: envelope
       text: contact@galax.dev
       href: mailto:contact@galax.dev
 back-to-top-navigation: false
 ---
+My name is Szymon and, I am an aspiring Machine/Deep Learning Engineer, currently in my third year of Computer Science.
+If you are already here, you can check out my blog posts and demo apps in the playground below.
+You can find most of the code for my projects on my GitHub.
 
-This is a Quarto website.
-
-
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
 
 :::::{.grid}
 ::::{.g-col-12 .g-col-md-6}
-## forblog
-Click [here](http://example.org/) to check out the latest Blogs.
+## blog
+Click [here](blog.qmd) to check out the all blog posts.
 
 :::{#posts}
 :::
 ::::
 ::::{.g-col-12 .g-col-md-6}
 ## playground
-Click [here](http://example.org/) to play more in the playground.
+Click [here](apps.qmd) to play more in the playground.
 
 :::{#apps}
 :::
