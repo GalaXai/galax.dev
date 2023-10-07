@@ -50,12 +50,6 @@ website:
         - icon: twitter
           text: twitter
           href: https://www.X.com/afterhoursbilly
-    right:
-      - icon: github
-        href: "https://github.com/GalaxUniv"
-      - icon: twitter
-        href: https://twitter.com/afterhoursbilly
 
 
 metadata-files: [dev.yml]
-

@@ -1,8 +1,12 @@
 ---
-title: "Hello 👋"
+## This is Metadata {{ meta ----}}
+##title: '{{< var version >}}'
+
 format:
   html:
     page-layout: full
+
+title: "Hello 👋"
 pagetitle: galax.dev
 section-divs: false
 toc: false
@@ -22,6 +26,7 @@ listing:
     grid-columns: 3
     sort:
       - "data desc"
+
 image: static/images/profile.jpg
 about:
   template: jolla
@@ -30,7 +35,6 @@ about:
   links:
     - icon: discord
       text: afterhoursbilly
-      href: https://www.discord.com/users/1063240042291671050
     - icon: github
       text: GitHub
       href: https://github.com/GalaxUniv
