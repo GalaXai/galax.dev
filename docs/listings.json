@@ -1,17 +1,19 @@
 [
   {
-    "listing": "/blog.html",
-    "items": [
-      "/posts/00_Image-to-Image.html"
-    ]
-  },
-  {
     "listing": "/apps.html",
     "items": []
   },
   {
     "listing": "/index.html",
     "items": [
+      "/posts/00_lr_scheduler_from_scratch.html",
+      "/posts/00_Image-to-Image.html"
+    ]
+  },
+  {
+    "listing": "/blog.html",
+    "items": [
+      "/posts/00_lr_scheduler_from_scratch.html",
       "/posts/00_Image-to-Image.html"
     ]
   }

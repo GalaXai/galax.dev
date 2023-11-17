@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://www.galax.dev/blog.html</loc>
-    <lastmod>2023-10-07T11:45:06.483Z</lastmod>
+    <loc>https://www.galax.dev/posts/00_lr_scheduler_from_scratch.html</loc>
+    <lastmod>2023-11-17T22:36:17.738Z</lastmod>
   </url>
   <url>
     <loc>https://www.galax.dev/apps.html</loc>
-    <lastmod>2023-10-07T11:45:05.679Z</lastmod>
+    <lastmod>2023-11-17T22:36:16.370Z</lastmod>
   </url>
   <url>
     <loc>https://www.galax.dev/index.html</loc>
-    <lastmod>2023-10-07T11:46:08.387Z</lastmod>
+    <lastmod>2023-11-17T22:36:15.774Z</lastmod>
+  </url>
+  <url>
+    <loc>https://www.galax.dev/blog.html</loc>
+    <lastmod>2023-11-17T22:36:16.122Z</lastmod>
   </url>
   <url>
     <loc>https://www.galax.dev/posts/00_Image-to-Image.html</loc>
-    <lastmod>2023-10-07T11:42:44.996Z</lastmod>
+    <lastmod>2023-11-17T22:36:17.190Z</lastmod>
   </url>
 </urlset>
